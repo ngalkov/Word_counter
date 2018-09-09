@@ -5,8 +5,9 @@ import os
 import argparse
 from collections import Counter
 
-from code_processing import PythonParser, ExtractWordsFromFuncNamesMixin
-from natural_language_processing import Analyzer, FilterPartOfSpeechMixin
+from utils import *
+import python_parsing
+from natural_language_processing import PartOfSpeechFilter
 
 
 def parse_cmd_line_args():
@@ -41,29 +42,22 @@ def parse_cmd_line_args():
     return parser.parse_args()
 
 
-def walk_project(project_dir, parser, analyzer):
-    results = {}
-    for root, dirs, files in os.walk(project_dir, topdown=True):
-        for file in files:
-            parsed_data = parser.process(file)
-            results[file] = analyzer.process(parsed_data)
-    return results
-
-
-def count_part_of_speech(projects):
-    class PythonFuncNameParser(ExtractWordsFromFuncNamesMixin, PythonParser):
+def count_part_of_speech_python(projects):
+    class FuncNameParser(python_parsing.ExtractWordsFromFuncNamesMixin, python_parsing.Parser):
         pass
-
-    class PartOfSpeechCounter(FilterPartOfSpeechMixin, Analyzer):
-        pass
-
-    python_func_name_parser = PythonFuncNameParser()
-    part_of_speech_counter = PartOfSpeechCounter("verb")  # TODO: подставить из args
-    statistics = {}
+    words_statistics = Counter()
+    words_count = 0
+    func_name_parser = FuncNameParser()
+    part_of_speech_counter = PartOfSpeechFilter(["verb", "noun"])  # TODO: подставить из args
     for project in projects:
         if not os.path.isdir(project):
             continue
-        statistics[project] = walk_project(project, python_func_name_parser, part_of_speech_counter)
+        for file in walk_dir(project):
+            parsed_data = func_name_parser.process(file)
+            words = part_of_speech_counter.process(parsed_data)
+            words_statistics.update(words)
+            words_count += len(words)
+    return words_statistics, words_count
 
 
 if __name__ == "__main__":
@@ -73,5 +67,3 @@ if __name__ == "__main__":
         with open(args.projects_list) as fp:
             projects.extend(map(str.strip, fp.readlines()))
     projects = [os.path.join(args.dir, project) for project in projects]
-
-

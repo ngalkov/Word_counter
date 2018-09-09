@@ -2,14 +2,8 @@ import ast
 import abc
 import re
 
+from utils import *
 
-def read_file(file_path):
-    """Return file content or None in case of error"""
-    try:
-        with open(file_path) as fp:
-            return fp.read()
-    except OSError:
-        return None
 
 class BaseParser(abc.ABC):
     def __init__(self, **kwargs):
@@ -21,7 +15,7 @@ class BaseParser(abc.ABC):
         pass
 
 
-class PythonParser(BaseParser):
+class Parser(BaseParser):
     def __init__(self, **kwargs):
         self.filename_pattern = ".*\.py$"
         super().__init__(**kwargs)
@@ -37,7 +31,7 @@ class PythonParser(BaseParser):
         return self.parse(syntax_tree)
 
 
-class ExtractWordsFromFuncNamesMixin():
+class ExtractWordsFromFuncNamesMixin:
     def parse(self, syntax_tree):
         words = []
         if not syntax_tree:
@@ -46,7 +40,3 @@ class ExtractWordsFromFuncNamesMixin():
             if isinstance(node, ast.FunctionDef):
                 words.extend(split_snake_case_to_words(node.name.lower()))
         return words
-
-
-def split_snake_case_to_words(name):
-    return [word for word in name.split('_') if word]

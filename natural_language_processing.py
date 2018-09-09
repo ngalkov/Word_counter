@@ -2,7 +2,6 @@
 
 import re
 import abc
-import itertools
 
 from nltk import pos_tag
 
@@ -41,7 +40,7 @@ def tag_part_of_speech(word):
         return None
     pos_info = pos_tag([word])
     word_tag = pos_info[0][1]
-    for part_of_speech, pattern in PART_OF_SPEECH_PATTERNS:
+    for part_of_speech, pattern in PART_OF_SPEECH_PATTERNS.items():
         if re.match(pattern, word_tag):
             return part_of_speech
     return None

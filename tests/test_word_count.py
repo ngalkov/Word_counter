@@ -25,11 +25,11 @@ class TestNaturalLanguageProcessing(unittest.TestCase):
             self.assertEqual(tag_part_of_speech(word), tag)
 
     def test_PartOfSpeechFilter(self):
-        nv_filter = PartOfSpeechFilter(("noun", "verb"))
-        words = ("", "get", "makes" "word", "python", "123")
-        filtered = ["get", "makes" "word", "python"]
-        self.assertEqual(nv_filter.process(words), filtered)
-
+        noun_verb_filter = PartOfSpeechFilter(("noun", "verb"))
+        noun_filter = PartOfSpeechFilter(["noun"])
+        words = ("", "get", "makes", "word", "python", "123")
+        self.assertEqual(noun_verb_filter.process(words), ["get", "makes", "word", "python"])
+        self.assertEqual(noun_filter.process(words), ["word", "python"])
 
 if __name__ == '__main__':
     unittest.main()

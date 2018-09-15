@@ -4,6 +4,18 @@ import re
 
 from utils import *
 
+# to gather mixins that can extract words from python names
+# for example - {"func": FuncMixin, "local_var": LocalVarsMixin, ...}
+NAME_EXTRACTION_MIXIN = {}
+
+
+def register(registry, class_label):
+    """Decorator to add class to registry dict with a key class_label"""
+    def decorator_maker(cls):
+        registry[class_label] = cls
+        return cls
+    return decorator_maker
+
 
 def build_syntax_tree(program_text):
     try:
@@ -15,6 +27,8 @@ def build_syntax_tree(program_text):
 
 def extract_func_nodes(start_node):
     func_nodes = []
+    if not isinstance(start_node, ast.AST):
+        return func_nodes
     for node in ast.walk(start_node):
         if isinstance(node, ast.FunctionDef):
             func_nodes.append(node)
@@ -56,6 +70,7 @@ class Parser(BaseParser):
         return self.parse()
 
 
+@register(NAME_EXTRACTION_MIXIN, "func")
 class ExtractWordsFromFuncNamesMixin:
     def parse(self):
         words = []
@@ -67,7 +82,8 @@ class ExtractWordsFromFuncNamesMixin:
         return words
 
 
-class ExtractVarsLocalToFunctionMixin:
+@register(NAME_EXTRACTION_MIXIN, "local_var")
+class ExtractWordsFromLocalVarsMixin:
     def parse(self):
         words = []
         if not self.syntax_tree:

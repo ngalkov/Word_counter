@@ -1,13 +1,12 @@
 """Collect verb usage statistics through projects"""
 
 
-import os
 import argparse
 from collections import Counter
 
 from utils import *
 import python_parsing
-from natural_language_processing import PartOfSpeechFilter
+from natural_language_processing import PartOfSpeechFilter, PART_OF_SPEECH_PATTERNS
 
 
 def parse_cmd_line_args():
@@ -28,14 +27,28 @@ def parse_cmd_line_args():
         help="file with projects list to check"
     )
     parser.add_argument(
-        "-m", "--max_verbs",
-        help="number of verbs to print",
+        "-s", "--part_of_speech",
+        help="part of speech to extract",
+        choices=list(PART_OF_SPEECH_PATTERNS.keys()),
+        nargs='+',
+        default=list(PART_OF_SPEECH_PATTERNS.keys())
+    )
+    parser.add_argument(
+        "-i", "--identifier",
+        help="identifiers to extract",
+        choices=list(python_parsing.NAME_EXTRACTION_MIXIN),
+        nargs='+',
+        default=list(python_parsing.NAME_EXTRACTION_MIXIN)
+    )
+    parser.add_argument(
+        "-m", "--max_words",
+        help="number of words to print",
         type=int,
         default=200
     )
     parser.add_argument(
         "--no_magic",
-        help="don't count verbs in magic methods",
+        help="don't count words in magic names",
         action="store_true",
         default=False
     )
@@ -67,3 +80,4 @@ if __name__ == "__main__":
         with open(args.projects_list) as fp:
             projects.extend(map(str.strip, fp.readlines()))
     projects = [os.path.join(args.dir, project) for project in projects]
+    print(args)

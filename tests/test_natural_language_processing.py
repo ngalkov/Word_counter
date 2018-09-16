@@ -4,15 +4,6 @@ from natural_language_processing import *
 
 
 class TestNaturalLanguageProcessing(unittest.TestCase):
-    def test_BaseAnalyzer(self):
-        class Analyzer(BaseAnalyzer):
-            def process(self, data):
-                return str(data) + "_processed"
-        analyzer = Analyzer(param1="P1", param2="P2")
-        self.assertEqual(analyzer.param1, "P1")
-        self.assertEqual(analyzer.param2, "P2")
-        self.assertEqual(analyzer.process("test"), "test_processed")
-
     def test_tag_part_of_speech(self):
         cases = (
             (None, None),

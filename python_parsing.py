@@ -49,20 +49,11 @@ def extract_vars_from_function(func_node):
     return local_var_nodes
 
 
-class BaseParser(abc.ABC):
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-    @abc.abstractmethod
-    def process(self, data):
-        pass
-
-
-class Parser(BaseParser):
+class Parser():
     def __init__(self, **kwargs):
         self.filename_pattern = ".*\.py$"
-        super().__init__(**kwargs)
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def process(self, file_path):
         if not re.match(self.filename_pattern, file_path):

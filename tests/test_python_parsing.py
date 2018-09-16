@@ -19,15 +19,6 @@ class TestPythonParsing(unittest.TestCase):
         )
         self.assertIsNone(python_parsing.build_syntax_tree("1 = 'bad syntax"))
 
-    def test_BaseParser(self):
-        class Analyzer(python_parsing.BaseParser):
-            def process(self, data):
-                return str(data) + "_processed"
-        analyzer = Analyzer(param1="P1", param2="P2")
-        self.assertEqual(analyzer.param1, "P1")
-        self.assertEqual(analyzer.param2, "P2")
-        self.assertEqual(analyzer.process("test"), "test_processed")
-
     def test_Parser(self):
         class PassThroughMixin:
             def parse(self):
@@ -36,15 +27,17 @@ class TestPythonParsing(unittest.TestCase):
         class TestParser(PassThroughMixin, python_parsing.Parser):
             pass
 
-        test_parser = TestParser()
-        # OK
+        test_parser = TestParser(no_magic="test")
+        # test attributes defining
+        self.assertEqual(test_parser.no_magic, "test")
+        # test parsing OK
         self.assertEqual(
             ast.dump(test_parser.process("./python_parsing_test/build_tree_test.py")),
             "Module(body=[Assign(targets=[Name(id='a', ctx=Store())], value=Num(n=1))])"
         )
-        # Bad_syntax
+        # test bad_syntax
         self.assertIsNone(test_parser.process("./python_parsing_test/bad_syntax.py"))
-        # Not a python file
+        # test not a python file
         self.assertIsNone(test_parser.process("./python_parsing_test/not_python_file.txt"))
 
     def test_ExtractWordsFromFuncNamesMixin(self):

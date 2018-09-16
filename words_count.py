@@ -55,7 +55,7 @@ def parse_cmd_line_args():
     return parser.parse_args()
 
 
-def extract_words_from_python_project(project_dir, python_ids):
+def extract_words_from_python_project(project_dir, python_ids, no_magic=False):
     """
     Return list of words, extracted from identifiers in python files from project_dir.
 
@@ -72,7 +72,7 @@ def extract_words_from_python_project(project_dir, python_ids):
 
         class Parser(Mixin, python_parsing.Parser):
             pass
-        parsers.append(Parser())
+        parsers.append(Parser(no_magic=no_magic))
 
     words = []
     for file in walk_dir(project_dir):
@@ -81,11 +81,11 @@ def extract_words_from_python_project(project_dir, python_ids):
     return words
 
 
-def count_part_of_speech_in_python_projects(projects, python_ids, parts_of_speech):
+def count_part_of_speech_in_python_projects(projects, python_ids, parts_of_speech, no_magic=False):
     part_of_speech_counter = PartOfSpeechFilter(parts_of_speech)
     words_statistics = Counter()
     for project in projects:
-        words = extract_words_from_python_project(project, python_ids)
+        words = extract_words_from_python_project(project, python_ids, no_magic=no_magic)
         filtered_words = part_of_speech_counter.process(words)
         words_statistics.update(filtered_words)
     return words_statistics
@@ -105,5 +105,10 @@ if __name__ == "__main__":
         with open(args.projects_list) as fp:
             projects.extend(map(str.strip, fp.readlines()))
     projects = [os.path.join(args.dir, project) for project in projects]
-    words_statistics = count_part_of_speech_in_python_projects(projects, args.identifier, args.part_of_speech)
+    words_statistics = count_part_of_speech_in_python_projects(
+        projects,
+        args.identifier,
+        args.part_of_speech,
+        args.no_magic
+    )
     make_report(words_statistics, args.max_words)

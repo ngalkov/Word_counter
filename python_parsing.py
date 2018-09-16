@@ -80,7 +80,10 @@ class ExtractWordsFromFuncNamesMixin:
             return words
         func_nodes = extract_func_nodes(self.syntax_tree)
         for func_node in func_nodes:
-            words.extend(split_snake_case_to_words(func_node.name.lower()))
+            func_name = func_node.name.lower()
+            if func_name.startswith("__") and func_name.endswith("__") and self.no_magic:
+                continue
+            words.extend(split_snake_case_to_words(func_name))
         return words
 
 
@@ -95,5 +98,8 @@ class ExtractWordsFromLocalVarsMixin:
         for func_node in func_nodes:
                 local_var_nodes.extend(extract_vars_from_function(func_node))
         for local_var_node in local_var_nodes:
-            words.extend(split_snake_case_to_words(local_var_node.id.lower()))
+            local_var_name = local_var_node.id.lower()
+            if local_var_name.startswith("__") and local_var_name.endswith("__") and self.no_magic:
+                continue
+            words.extend(split_snake_case_to_words(local_var_name))
         return words

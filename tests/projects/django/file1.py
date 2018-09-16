@@ -9,5 +9,6 @@ def make_table():
 
 
 def __get__():
+    __table__ = []
     pass
 

@@ -8,7 +8,7 @@ from utils import *
 class TestPythonParsing(unittest.TestCase):
     def test_register_decorator(self):
         self.assertEqual(
-            python_parsing.NAME_EXTRACTION_MIXIN["func"],
+            python_parsing.NAME_EXTRACTION_MIXINS["func"],
             python_parsing.ExtractWordsFromFuncNamesMixin
         )
 

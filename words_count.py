@@ -36,9 +36,9 @@ def parse_cmd_line_args():
     parser.add_argument(
         "-i", "--identifier",
         help="identifiers to extract",
-        choices=list(python_parsing.NAME_EXTRACTION_MIXIN),
+        choices=list(python_parsing.NAME_EXTRACTION_MIXINS),
         nargs='+',
-        default=list(python_parsing.NAME_EXTRACTION_MIXIN)
+        default=list(python_parsing.NAME_EXTRACTION_MIXINS)
     )
     parser.add_argument(
         "-m", "--max_words",
@@ -55,22 +55,47 @@ def parse_cmd_line_args():
     return parser.parse_args()
 
 
-def count_part_of_speech_python(projects):
-    class FuncNameParser(python_parsing.ExtractWordsFromFuncNamesMixin, python_parsing.Parser):
-        pass
+def extract_words_from_python_project(project_dir, python_ids):
+    """
+    Return list of words, extracted from identifiers in python files from project_dir.
+
+    :param project_dir: project directory
+    :param python_ids: list of identifiers to extract from (e.g. ["func", "local_var"])
+    :return: list of words
+    """
+    if not os.path.isdir(project_dir):
+        return []
+    # create parser for each identifier in python_ids
+    parsers = []
+    for python_id in python_ids:
+        Mixin = python_parsing.NAME_EXTRACTION_MIXINS[python_id]
+
+        class Parser(Mixin, python_parsing.Parser):
+            pass
+        parsers.append(Parser())
+
+    words = []
+    for file in walk_dir(project_dir):
+        for parser in parsers:
+            words.extend(parser.process(file))
+    return words
+
+
+def count_part_of_speech_in_python_projects(projects, python_ids, parts_of_speech):
+    part_of_speech_counter = PartOfSpeechFilter(parts_of_speech)
     words_statistics = Counter()
-    words_count = 0
-    func_name_parser = FuncNameParser()
-    part_of_speech_counter = PartOfSpeechFilter(["verb", "noun"])  # TODO: подставить из args
     for project in projects:
-        if not os.path.isdir(project):
-            continue
-        for file in walk_dir(project):
-            parsed_data = func_name_parser.process(file)
-            words = part_of_speech_counter.process(parsed_data)
-            words_statistics.update(words)
-            words_count += len(words)
-    return words_statistics, words_count
+        words = extract_words_from_python_project(project, python_ids)
+        filtered_words = part_of_speech_counter.process(words)
+        words_statistics.update(filtered_words)
+    return words_statistics
+
+
+def make_report(words_statistics, max_words):
+    words_count = sum(words_statistics.values())
+    print('total %s words, %s unique' % (words_count, len(words_statistics)))
+    for word, occurrence in words_statistics.most_common(max_words):
+        print(word, occurrence)
 
 
 if __name__ == "__main__":
@@ -80,4 +105,5 @@ if __name__ == "__main__":
         with open(args.projects_list) as fp:
             projects.extend(map(str.strip, fp.readlines()))
     projects = [os.path.join(args.dir, project) for project in projects]
-    print(args)
+    words_statistics = count_part_of_speech_in_python_projects(projects, args.identifier, args.part_of_speech)
+    make_report(words_statistics, args.max_words)

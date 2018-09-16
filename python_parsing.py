@@ -6,7 +6,7 @@ from utils import *
 
 # to gather mixins that can extract words from python names
 # for example - {"func": FuncMixin, "local_var": LocalVarsMixin, ...}
-NAME_EXTRACTION_MIXIN = {}
+NAME_EXTRACTION_MIXINS = {}
 
 
 def register(registry, class_label):
@@ -18,6 +18,8 @@ def register(registry, class_label):
 
 
 def build_syntax_tree(program_text):
+    if not program_text:
+        return None
     try:
         syntax_tree = ast.parse(program_text)
     except SyntaxError:
@@ -70,7 +72,7 @@ class Parser(BaseParser):
         return self.parse()
 
 
-@register(NAME_EXTRACTION_MIXIN, "func")
+@register(NAME_EXTRACTION_MIXINS, "func")
 class ExtractWordsFromFuncNamesMixin:
     def parse(self):
         words = []
@@ -82,7 +84,7 @@ class ExtractWordsFromFuncNamesMixin:
         return words
 
 
-@register(NAME_EXTRACTION_MIXIN, "local_var")
+@register(NAME_EXTRACTION_MIXINS, "local_var")
 class ExtractWordsFromLocalVarsMixin:
     def parse(self):
         words = []

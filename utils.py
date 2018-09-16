@@ -4,7 +4,7 @@ import os
 def walk_dir(dir_path):
     for root, dirs, files in os.walk(dir_path, topdown=True):
         for file in files:
-            yield file
+            yield os.path.join(root, file)
 
 
 def read_file(file_path):

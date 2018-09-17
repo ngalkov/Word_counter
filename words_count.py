@@ -2,6 +2,7 @@
 
 
 import argparse
+import tempfile
 from collections import Counter
 
 from utils import *
@@ -56,13 +57,7 @@ def parse_cmd_line_args():
 
 
 def extract_words_from_python_project(project_dir, python_ids, no_magic=False):
-    """
-    Return list of words, extracted from identifiers in python files from project_dir.
-
-    :param project_dir: project directory
-    :param python_ids: list of identifiers to extract from (e.g. ["func", "local_var"])
-    :return: list of words
-    """
+    """Return list of words, extracted from identifiers in python files from project_dir."""
     if not os.path.isdir(project_dir):
         return []
     # create parser for each identifier in python_ids
@@ -77,7 +72,9 @@ def extract_words_from_python_project(project_dir, python_ids, no_magic=False):
     words = []
     for file in walk_dir(project_dir):
         for parser in parsers:
-            words.extend(parser.process(file))
+            new_words = parser.process(file)
+            if new_words:
+                words.extend(new_words)
     return words
 
 
@@ -85,7 +82,16 @@ def count_part_of_speech_in_python_projects(projects, python_ids, parts_of_speec
     part_of_speech_counter = PartOfSpeechFilter(parts_of_speech)
     words_statistics = Counter()
     for project in projects:
-        words = extract_words_from_python_project(project, python_ids, no_magic=no_magic)
+        if is_path_remote(project):
+            # tempfile.TemporaryDirectory() can't cleanup on Windows (see https://bugs.python.org/issue26660)
+            try:
+                with tempfile.TemporaryDirectory() as tmp_dir:
+                    fetch_remote_repo(project, tmp_dir)
+                    words = extract_words_from_python_project(tmp_dir, python_ids, no_magic=no_magic)
+            except OSError:
+                pass
+        else:
+            words = extract_words_from_python_project(project, python_ids, no_magic=no_magic)
         filtered_words = part_of_speech_counter.process(words)
         words_statistics.update(filtered_words)
     return words_statistics

@@ -51,5 +51,13 @@ class TestWordsCount(unittest.TestCase):
         )
         self.assertDictEqual(words_statistics, {'make': 2, 'do': 1})
 
+        # # test remote repo
+        # words_statistics = count_part_of_speech_in_python_projects(
+        #     ["https://github.com/ngalkov/Test.git"],
+        #     ["func"],
+        #     ["verb"],
+        # )
+        # self.assertDictEqual(words_statistics, {'make': 1})
+
 if __name__ == "__main__":
     unittest.main()

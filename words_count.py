@@ -2,6 +2,8 @@
 
 
 import argparse
+import csv
+import json
 import tempfile
 from collections import Counter
 
@@ -46,6 +48,10 @@ def parse_cmd_line_args():
         help="number of words to print",
         type=int,
         default=200
+    )
+    parser.add_argument(
+        "-r", "--report",
+        help="report file",
     )
     parser.add_argument(
         "--no_magic",
@@ -97,11 +103,35 @@ def count_part_of_speech_in_python_projects(projects, python_ids, parts_of_speec
     return words_statistics
 
 
-def make_report(words_statistics, max_words):
-    words_count = sum(words_statistics.values())
-    print('total %s words, %s unique' % (words_count, len(words_statistics)))
-    for word, occurrence in words_statistics.most_common(max_words):
-        print(word, occurrence)
+def make_report(words_statistics, max_words, report_file=None):
+    if not report_file:
+        words_count = sum(words_statistics.values())
+        print('total %s words, %s unique' % (words_count, len(words_statistics)))
+        for word, occurrence in words_statistics.most_common(max_words):
+            print(word, occurrence)
+    elif report_file.endswith(".xml"):
+        make_xml_report(words_statistics.most_common(max_words), report_file)
+    elif report_file.endswith(".json"):
+        make_json_report(words_statistics.most_common(max_words), report_file)
+    elif report_file.endswith(".csv"):
+        make_csv_report(words_statistics.most_common(max_words), report_file)
+
+
+def make_xml_report(common_words, report_file):
+    xml_statistics = list_to_xml("common words", common_words)
+    tree = ET.ElementTree(xml_statistics)
+    tree.write(report_file, encoding="unicode")
+
+
+def make_json_report(common_words, report_file):
+    with open(report_file, "w") as fp:
+        json.dump(common_words, fp)
+
+
+def make_csv_report(common_words, report_file):
+    with open(report_file, "w") as fp:
+        writer = csv.writer(fp)
+        writer.writerows(common_words)
 
 
 if __name__ == "__main__":
@@ -117,4 +147,4 @@ if __name__ == "__main__":
         args.part_of_speech,
         args.no_magic
     )
-    make_report(words_statistics, args.max_words)
+    make_report(words_statistics, args.max_words, args.report)

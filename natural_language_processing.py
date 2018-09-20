@@ -1,7 +1,6 @@
 """Utils for process natural language"""
 
 import re
-import abc
 
 from nltk import pos_tag
 
@@ -26,7 +25,7 @@ def tag_part_of_speech(word):
     return None
 
 
-class PartOfSpeechFilter():
+class PartOfSpeechFilter:
     """Filter words list by part of speech matching"""
     def __init__(self, part_of_speech_list):
         self.part_of_speech_list = part_of_speech_list

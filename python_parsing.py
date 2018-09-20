@@ -1,5 +1,4 @@
 import ast
-import abc
 import re
 
 from utils import *
@@ -49,7 +48,7 @@ def extract_vars_from_function(func_node):
     return local_var_nodes
 
 
-class Parser():
+class Parser:
     def __init__(self, **kwargs):
         self.filename_pattern = ".*\.py$"
         for key, value in kwargs.items():

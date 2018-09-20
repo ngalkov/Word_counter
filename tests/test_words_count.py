@@ -59,5 +59,6 @@ class TestWordsCount(unittest.TestCase):
         # )
         # self.assertDictEqual(words_statistics, {'make': 1})
 
+
 if __name__ == "__main__":
     unittest.main()

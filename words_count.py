@@ -1,4 +1,4 @@
-"""Collect verb usage statistics through projects"""
+"""Collect word usage statistics through projects"""
 
 
 import argparse
